@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -77,8 +78,12 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     val refPath = call.argument<String>("path")
                     val file = File(refPath)
                     if (file.exists()) {
-                        MediaScannerConnection.scanFile(activity, arrayOf(refPath), null, null);
-//                        MediaStore.Images.Media.insertImage(activity?.contentResolver, refPath, "title", "description");
+
+
+                        MediaScannerConnection.scanFile(activity, arrayOf(refPath), arrayOf("png")) { p0, p1 ->
+                            Log.d("DEBUG", "onScanCompleted")
+                            Log.d("DEBUG", "$p0   $p1")
+                        };
                         result.success("200")
                     }
                     result.success("404")
