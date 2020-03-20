@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -22,10 +24,13 @@ import java.io.File
 
 /** RefreshAlbumPlugin */
 public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+    private var binding: ActivityPluginBinding? = null
+    private var methodCallHandler: MethodCallHandler? = null
+    private var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding? = null
     private var activity: Activity? = null
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        val channel = MethodChannel(flutterPluginBinding.flutterEngine.dartExecutor, "refresh_album")
-        channel.setMethodCallHandler(RefreshAlbumPlugin());
+//        val channel = MethodChannel(flutterPluginBinding.flutterEngine.dartExecutor, "refresh_album")
+//        channel.setMethodCallHandler(RefreshAlbumPlugin());
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -78,8 +83,6 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     val refPath = call.argument<String>("path")
                     val file = File(refPath)
                     if (file.exists()) {
-
-
                         MediaScannerConnection.scanFile(activity, arrayOf(refPath), arrayOf("png")) { p0, p1 ->
                             Log.d("DEBUG", "onScanCompleted")
                             Log.d("DEBUG", "$p0   $p1")
@@ -99,22 +102,30 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-//        this.activity = null
+        this.flutterPluginBinding = null
     }
 
     override fun onDetachedFromActivity() {
-        this.activity
+        if (methodCallHandler == null) return
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        this.activity = binding.activity
+        onAttachedToActivity(binding)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        this.activity = binding.activity
+        this.binding = binding
+        bindMethod(binding.activity, flutterPluginBinding!!.flutterEngine.dartExecutor)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-//        this.activity = null
+        onDetachedFromActivity()
+    }
+
+    private fun bindMethod(activity: Activity, messenger: BinaryMessenger) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return
+
+        methodCallHandler = RefreshAlbumPlugin()
+        this.activity = activity
     }
 }
