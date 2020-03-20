@@ -1,6 +1,7 @@
 package com.sm9i.refresh_album
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -23,14 +24,18 @@ import java.io.File
 
 
 /** RefreshAlbumPlugin */
-public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
-    private var binding: ActivityPluginBinding? = null
-    private var methodCallHandler: MethodCallHandler? = null
-    private var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding? = null
-    private var activity: Activity? = null
+public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler {
+
+    lateinit var context: Context
+
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-//        val channel = MethodChannel(flutterPluginBinding.flutterEngine.dartExecutor, "refresh_album")
-//        channel.setMethodCallHandler(RefreshAlbumPlugin());
+        val channel = MethodChannel(flutterPluginBinding.flutterEngine.dartExecutor, "refresh_album")
+        context = flutterPluginBinding.applicationContext
+        channel.setMethodCallHandler(RefreshAlbumPlugin());
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -46,7 +51,9 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "refresh_album")
-            channel.setMethodCallHandler(RefreshAlbumPlugin())
+            val c = RefreshAlbumPlugin()
+            c.context = registrar.context()
+            channel.setMethodCallHandler(c)
         }
     }
 
@@ -62,8 +69,8 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     if (file.exists()) {
                         val uri = Uri.fromFile(file)
                         val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri)
-                        Log.d("DEBUG", "${activity == null}")
-                        with(activity) {
+                        Log.d("DEBUG", "${context == null}")
+                        with(context) {
                             this?.sendBroadcast(intent)
                         }
                         result.success("200")
@@ -73,8 +80,8 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                 result.success("500")
             }
             "refreshAll" -> {
-                Log.d("DEBUG", "${activity == null}")
-                with(activity) {
+                Log.d("DEBUG", "${context == null}")
+                with(context) {
                     this?.sendBroadcast(Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())))
                 }
             }
@@ -83,7 +90,7 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     val refPath = call.argument<String>("path")
                     val file = File(refPath)
                     if (file.exists()) {
-                        MediaScannerConnection.scanFile(activity, arrayOf(refPath), arrayOf("png")) { p0, p1 ->
+                        MediaScannerConnection.scanFile(context, arrayOf(refPath), arrayOf("png")) { p0, p1 ->
                             Log.d("DEBUG", "onScanCompleted")
                             Log.d("DEBUG", "$p0   $p1")
                         };
@@ -101,31 +108,5 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
 
     }
 
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        this.flutterPluginBinding = null
-    }
 
-    override fun onDetachedFromActivity() {
-        if (methodCallHandler == null) return
-    }
-
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        onAttachedToActivity(binding)
-    }
-
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        this.binding = binding
-        bindMethod(binding.activity, flutterPluginBinding!!.flutterEngine.dartExecutor)
-    }
-
-    override fun onDetachedFromActivityForConfigChanges() {
-        onDetachedFromActivity()
-    }
-
-    private fun bindMethod(activity: Activity, messenger: BinaryMessenger) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return
-
-        methodCallHandler = RefreshAlbumPlugin()
-        this.activity = activity
-    }
 }
