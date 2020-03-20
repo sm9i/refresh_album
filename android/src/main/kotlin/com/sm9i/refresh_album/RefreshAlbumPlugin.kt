@@ -51,8 +51,7 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     val file = File(refPath)
                     if (file.exists()) {
                         val uri = Uri.fromFile(file)
-                        val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-                        intent.data = uri
+                        val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri)
                         activity?.sendBroadcast(intent)
                         result.success("200")
                     }
