@@ -99,7 +99,7 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        this.activity = null
+//        this.activity = null
     }
 
     override fun onDetachedFromActivity() {
@@ -115,6 +115,6 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        this.activity = null
+//        this.activity = null
     }
 }
