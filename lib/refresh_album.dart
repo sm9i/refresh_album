@@ -11,6 +11,10 @@ class RefreshAlbum {
     return version;
   }
 
+  static void refreshAll() {
+    _channel.invokeMethod("refreshAll");
+  }
+
   static Future<String> refreshAlbum(String filePath) async {
     final String code =
         await _channel.invokeMethod("refreshAlbum", {"path": filePath});
