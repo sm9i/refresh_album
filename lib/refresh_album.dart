@@ -34,4 +34,24 @@ class RefreshAlbum {
         break;
     }
   }
+
+  static Future<String> refreshInstall(String filePath) async {
+    final String code =
+        await _channel.invokeMethod("refreshInstall", {"path": filePath});
+    debugPrint(code);
+    switch (code) {
+      case "200":
+        return "刷新成功";
+        break;
+      case "404":
+        return "文件不存在";
+        break;
+      case "500":
+        return "未知异常";
+        break;
+      default:
+        return "未知异常";
+        break;
+    }
+  }
 }

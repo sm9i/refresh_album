@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -69,8 +70,19 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                 with(activity) {
                     this?.sendBroadcast(Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())))
                 }
-
-
+            }
+            "refreshInstall" -> {
+                if (call.hasArgument("path")) {
+                    val refPath = call.argument<String>("path")
+                    val file = File(refPath)
+                    if (file.exists()) {
+                        MediaStore.Images.Media.insertImage(activity?.contentResolver, refPath, "title", "description");
+                        result.success("200")
+                    }
+                    result.success("404")
+                }
+                result.success("500")
+                
             }
             else -> {
                 result.notImplemented()
