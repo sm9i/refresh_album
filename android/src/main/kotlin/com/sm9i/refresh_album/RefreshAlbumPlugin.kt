@@ -1,10 +1,11 @@
 package com.sm9i.refresh_album
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.annotation.NonNull;
+import android.os.Environment
+import android.util.Log
+import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -14,6 +15,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.io.File
+
 
 /** RefreshAlbumPlugin */
 public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -52,12 +54,23 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     if (file.exists()) {
                         val uri = Uri.fromFile(file)
                         val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri)
-                        activity?.sendBroadcast(intent)
+                        Log.d("DEBUG", "${activity == null}")
+                        with(activity) {
+                            this?.sendBroadcast(intent)
+                        }
                         result.success("200")
                     }
                     result.success("404")
                 }
                 result.success("500")
+            }
+            "refreshAll" -> {
+                Log.d("DEBUG", "${activity == null}")
+                with(activity) {
+                    this?.sendBroadcast(Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())))
+                }
+
+
             }
             else -> {
                 result.notImplemented()
