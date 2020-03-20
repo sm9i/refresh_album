@@ -2,6 +2,7 @@ package com.sm9i.refresh_album
 
 import android.app.Activity
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
@@ -76,13 +77,14 @@ public class RefreshAlbumPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                     val refPath = call.argument<String>("path")
                     val file = File(refPath)
                     if (file.exists()) {
-                        MediaStore.Images.Media.insertImage(activity?.contentResolver, refPath, "title", "description");
+                        MediaScannerConnection.scanFile(activity, arrayOf(refPath), null, null);
+//                        MediaStore.Images.Media.insertImage(activity?.contentResolver, refPath, "title", "description");
                         result.success("200")
                     }
                     result.success("404")
                 }
                 result.success("500")
-                
+
             }
             else -> {
                 result.notImplemented()
